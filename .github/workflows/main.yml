@@ -46,6 +46,19 @@ jobs:
           fi
           echo "TAILSCALE_IP=$TS_IP" >> $GITHUB_ENV
 
+      # ========================================================
+      # BƯỚC THÊM MỚI: TỰ ĐỘNG CÀI ĐẶT OPENCODE
+      # ========================================================
+      - name: Pre-install OpenCode
+        run: |
+          echo "=== ĐANG TỰ ĐỘNG CÀI ĐẶT OPENCODE ==="
+          # Chạy script cài đặt chính thức từ opencode.ai
+          curl -fsSL https://opencode.ai/install | bash
+          
+          # Làm mới biến môi trường PATH cho các phiên Terminal sau của user runner
+          echo 'export PATH=$PATH:$HOME/.local/bin' >> /home/runner/.bashrc
+          echo "=== CÀI ĐẶT OPENCODE HOÀN TẤT ==="
+
       - name: Maintain Connection
         run: |
           echo -e "\n=== BITVISE SSH ACCESS INFORMATION ==="
