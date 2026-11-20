@@ -5,6 +5,7 @@ on:
 
 jobs:
   secure-ssh-ubuntu:
+    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 3600
 
@@ -23,6 +24,19 @@ jobs:
           
           # Lưu thông tin mật khẩu vào biến môi trường
           echo "SSH_PASSWORD=$PASSWORD" >> $GITHUB_ENV
+
+      - name: Install OpenCode and cinematic skill
+        run: |
+          curl -fsSL https://opencode.ai/v2/install | bash
+          sudo ln -sf "$HOME/.opencode/bin/opencode" /usr/local/bin/opencode
+          opencode --version
+
+          mkdir -p /home/runner/project "$HOME/.config/opencode/skills"
+          SKILL_REPO=$(mktemp -d)
+          trap 'rm -rf "$SKILL_REPO"' EXIT
+          git clone --depth 1 https://github.com/Moh4696/cinematic-skill.git "$SKILL_REPO"
+          cp -a "$SKILL_REPO/skills/cinematic-film" "$HOME/.config/opencode/skills/"
+          test -s "$HOME/.config/opencode/skills/cinematic-film/SKILL.md"
 
       - name: Install Tailscale
         run: |
@@ -59,3 +73,12 @@ jobs:
               echo "[$(date)] SSH Server Active - Đang đợi kết nối..."
               sleep 300
           done
+
+      - name: Upload project film outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: film-out
+          path: /home/runner/project/*/film/out/**
+          if-no-files-found: warn
+          include-hidden-files: true
