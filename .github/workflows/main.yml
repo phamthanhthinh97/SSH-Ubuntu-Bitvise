@@ -5,7 +5,6 @@ on:
 
 jobs:
   secure-ssh-ubuntu:
-    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 3600
 
@@ -19,7 +18,9 @@ jobs:
           echo "runner:$PASSWORD" | sudo chpasswd
           
           # Cho phép đăng nhập SSH bằng mật khẩu (mặc định GitHub tắt tính năng này)
-          sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+          echo 'PasswordAuthentication yes' | sudo tee /etc/ssh/sshd_config.d/00-enable-password-auth.conf > /dev/null
+          sudo sshd -t
+          sudo sshd -T | grep -qx 'passwordauthentication yes'
           sudo systemctl restart ssh
           
           # Lưu thông tin mật khẩu vào biến môi trường
